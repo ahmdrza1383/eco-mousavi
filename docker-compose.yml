@@ -3,7 +3,7 @@ version: '3.8'
 services:
   db:
     image: postgres:15-alpine
-    container_name: eco_mousavi_db
+    container_name: eco_finance_db
     restart: unless-stopped
     environment:
       POSTGRES_USER: myuser
@@ -19,19 +19,29 @@ services:
       timeout: 5s
       retries: 5
 
+  redis:
+    image: redis:alpine
+    container_name: eco_finance_redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+
   web:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: eco_mousavi_web
+    container_name: eco_finance_web
     restart: unless-stopped
     ports:
       - "3000:3000"
     depends_on:
       db:
         condition: service_healthy
+      redis:
+        condition: service_started
     environment:
       - DATABASE_URL=postgresql://myuser:mypassword@db:5432/ecomdb?schema=public
+      - REDIS_URL=redis://redis:6379
 
 volumes:
   postgres_data:

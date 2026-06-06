@@ -2,11 +2,12 @@ import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
 import { ThemeProvider } from "../components/ThemeProvider";
+import Header from "../components/Header";
 
 const vazirmatn = localFont({
   src: "../public/fonts/VazirmatnVariable.woff2",
   variable: "--font-vazirmatn",
-  weight: "100 900", 
+  weight: "100 900",
   display: "swap",
 });
 
@@ -34,7 +35,10 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          {children}
+          <Header />
+          <main className="flex-1 flex flex-col">
+            {children}
+          </main>
         </ThemeProvider>
       </body>
     </html>
