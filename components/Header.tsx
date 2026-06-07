@@ -1,13 +1,44 @@
-"use client";
+import Link from 'next/link';
+import { cookies } from 'next/headers';
+import { ThemeToggle } from './ThemeToggle';
+import { decrypt as verifyJwt } from '@/lib/jwt';
+import { LogIn, LogOut } from 'lucide-react';
 
-import Link from "next/link";
-import { ThemeToggle } from "./ThemeToggle";
-import { LogIn, UserCircle, FileText, LayoutDashboard } from "lucide-react";
-import { useState } from "react";
+export default async function Header() {
+  const cookieStore = await cookies();
+  // در کدهای قبلی نام کوکی را session گذاشته بودیم، اینجا هم session و هم token بررسی می‌شود
+  const token = cookieStore.get('session')?.value || cookieStore.get('token')?.value; 
+  
+  let isLoggedIn = false;
+  let isAdmin = false;
 
-export default function Header() {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [userRole, setUserRole] = useState("ADMIN"); 
+  if (token) {
+    try {
+      const payload = await verifyJwt(token);
+      
+      if (payload) {
+        isLoggedIn = true;
+        isAdmin = payload.role === 'ADMIN'; 
+      }
+    } catch (error) {
+      isLoggedIn = false;
+    }
+  }
+
+  const defaultLinks = [
+    { name: 'صفحه اصلی', href: '/' },
+    { name: 'تحلیل‌ها و مقالات', href: '/articles' },
+    { name: 'دوره‌های آموزشی', href: '/courses' },
+  ];
+
+  const adminLinks = [
+    { name: 'صفحه اصلی', href: '/' },
+    { name: 'نوشتن مقاله جدید', href: '/admin/articles/new' },
+    { name: 'مدیریت مقالات', href: '/admin/articles' },
+    { name: 'دوره‌های آموزشی', href: '/courses' },
+  ];
+
+  const navLinks = isAdmin ? adminLinks : defaultLinks;
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-gray-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md">
@@ -17,47 +48,45 @@ export default function Header() {
           <Link href="/" className="text-2xl font-bold text-emerald-600 dark:text-emerald-500">
             اکو فایننس
           </Link>
-          
-          <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-slate-600 dark:text-slate-300">
-            <Link href="/" className="hover:text-emerald-500 transition-colors">صفحه اصلی</Link>
-            <Link href="/articles" className="hover:text-emerald-500 transition-colors">تحلیل‌ها و مقالات</Link>
-            <Link href="/courses" className="hover:text-emerald-500 transition-colors">دوره‌های آموزشی</Link>
+
+          <nav className="hidden md:flex items-center gap-6">
+            {navLinks.map((link) => (
+              <Link 
+                key={link.href} 
+                href={link.href}
+                className="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors"
+              >
+                {link.name}
+              </Link>
+            ))}
           </nav>
         </div>
 
         <div className="flex items-center gap-3 md:gap-4">
           <ThemeToggle />
-
-          {isLoggedIn ? (
-            <div className="flex items-center gap-3">
-              {userRole === "ADMIN" && (
-                <Link 
-                  href="/admin/articles/new" 
-                  className="hidden md:flex items-center gap-2 text-sm text-emerald-600 dark:text-emerald-400 font-medium bg-emerald-50 dark:bg-emerald-900/30 px-3 py-2 rounded-lg hover:bg-emerald-100 dark:hover:bg-emerald-900/50 transition-colors"
-                >
-                  <FileText className="w-4 h-4" />
-                  نوشتن مقاله
-                </Link>
-              )}
-              
-              <button className="flex items-center gap-2 bg-gray-100 dark:bg-slate-800 px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-200 dark:hover:bg-slate-700 transition-colors">
-                <UserCircle className="w-5 h-5 text-slate-600 dark:text-slate-400" />
-                <span className="hidden sm:block">
-                  {userRole === "ADMIN" ? "پنل مدیریت" : "پروفایل من"}
-                </span>
-              </button>
-            </div>
-          ) : (
-            <button 
-              onClick={() => setIsLoggedIn(true)} 
-              className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors shadow-sm"
+          
+          {!isLoggedIn ? (
+            <Link 
+              href="/login" 
+              className="flex items-center gap-2 px-5 py-2 bg-emerald-600 text-white text-sm font-medium rounded-lg hover:bg-emerald-700 transition-colors shadow-sm"
             >
               <LogIn className="w-4 h-4" />
               ورود / ثبت‌نام
-            </button>
+            </Link>
+          ) : (
+            <div className="flex items-center gap-3">
+              <form action="/api/auth/logout" method="POST">
+                <button 
+                  type="submit" 
+                  className="flex items-center gap-2 px-4 py-2 text-sm font-medium border border-rose-200 dark:border-rose-800/50 text-rose-600 dark:text-rose-400 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-colors"
+                >
+                  <LogOut className="w-4 h-4" />
+                  خروج
+                </button>
+              </form>
+            </div>
           )}
         </div>
-        
       </div>
     </header>
   );

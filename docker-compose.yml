@@ -10,6 +10,8 @@ services:
       POSTGRES_USER: root
       POSTGRES_PASSWORD: password
       POSTGRES_DB: ecomdb
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
 
   redis:
     image: redis:alpine
@@ -21,12 +23,22 @@ services:
     build: 
       context: .
       dockerfile: Dockerfile
+      target: deps 
     container_name: eco_finance_web
     ports:
       - "3000:3000"
+    volumes:
+      - .:/app
+      - /app/node_modules 
+      - /app/.next      
     environment:
       - DATABASE_URL=postgresql://root:password@db:5432/ecomdb?schema=public
       - REDIS_URL=redis://redis:6379
+      - NODE_ENV=development
+    command: npm run dev 
     depends_on:
       - db
       - redis
+
+volumes:
+  postgres_data:

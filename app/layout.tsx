@@ -18,17 +18,12 @@ export const metadata: Metadata = {
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
-    <html
-      lang="fa"
-      dir="rtl"
-      suppressHydrationWarning
-      className={`${vazirmatn.variable} h-full antialiased`}
-    >
-      <body className="min-h-full flex flex-col bg-gray-50 dark:bg-slate-900 text-slate-900 dark:text-gray-100 transition-colors duration-300 font-sans">
+    <html lang="fa" dir="rtl" suppressHydrationWarning>
+      <body className="min-h-screen bg-gray-50 dark:bg-slate-950 text-slate-900 dark:text-gray-100 transition-colors duration-300">
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
@@ -36,9 +31,7 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <Header />
-          <main className="flex-1 flex flex-col">
-            {children}
-          </main>
+          <main className="flex-1">{children}</main>
         </ThemeProvider>
       </body>
     </html>
