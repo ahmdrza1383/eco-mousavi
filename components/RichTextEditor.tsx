@@ -26,7 +26,7 @@ export default function RichTextEditor({ value, onChange }: RichTextEditorProps)
     () => ({
       readonly: false,
       placeholder: "متن مقاله خود را اینجا بنویسید...",
-      direction: "rtl",
+      direction: "rtl" as const,
       language: "fa",
       height: 500,
       theme: theme === "dark" ? "dark" : "default",

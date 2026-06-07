@@ -4,44 +4,29 @@ services:
   db:
     image: postgres:15-alpine
     container_name: eco_finance_db
-    restart: unless-stopped
-    environment:
-      POSTGRES_USER: myuser
-      POSTGRES_PASSWORD: mypassword
-      POSTGRES_DB: ecomdb
     ports:
       - "5432:5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U myuser -d ecomdb"]
-      interval: 5s
-      timeout: 5s
-      retries: 5
+    environment:
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: ecomdb
 
   redis:
     image: redis:alpine
     container_name: eco_finance_redis
-    restart: unless-stopped
     ports:
       - "6379:6379"
 
   web:
-    build:
+    build: 
       context: .
       dockerfile: Dockerfile
     container_name: eco_finance_web
-    restart: unless-stopped
     ports:
       - "3000:3000"
-    depends_on:
-      db:
-        condition: service_healthy
-      redis:
-        condition: service_started
     environment:
-      - DATABASE_URL=postgresql://myuser:mypassword@db:5432/ecomdb?schema=public
+      - DATABASE_URL=postgresql://root:password@db:5432/ecomdb?schema=public
       - REDIS_URL=redis://redis:6379
-
-volumes:
-  postgres_data:
+    depends_on:
+      - db
+      - redis

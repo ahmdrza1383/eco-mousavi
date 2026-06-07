@@ -1,8 +1,6 @@
 import { NextResponse } from "next/server";
 import redis from "../../../../lib/redis";
-import { PrismaClient } from "@prisma/client";
-
-const prisma = new PrismaClient();
+import prisma from "@/lib/prisma"
 
 export async function POST(request: Request) {
   try {
@@ -33,7 +31,7 @@ export async function POST(request: Request) {
     }
 
     const code = Math.floor(10000 + Math.random() * 90000).toString();
-    await redis.set(phone, code, "EX", 120); 
+    await redis.set(phone, code, "EX", 120);
 
     console.log(`\n========================================`);
     console.log(`SMS MOCK: کد تایید شما برای اکو فایننس: ${code}`);
